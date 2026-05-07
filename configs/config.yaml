@@ -8,7 +8,7 @@ model:
   # - mistralai/Mistral-7B-v0.1 (7B, faster inference)
   # - Qwen/Qwen2-7B (7B, excellent at reasoning)
   # - Qwen/Qwen2.5-32B (32B, if available - best reasoning)
-  name: "Qwen/Qwen2-3B"  # Reduced to 3B to avoid OOM on T4
+  name: "Qwen/Qwen2.5-3B"  # Reduced to 3B to avoid OOM on T4
   device: "cuda"  # Change to "cpu" if no GPU available
   dtype: "float16"  # Use "float32" for more compatibility, "float16" for efficiency
   use_4bit_quantization: true  # Use 4-bit quantization to reduce memory (requires bitsandbytes)

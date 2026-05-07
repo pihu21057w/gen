@@ -87,7 +87,7 @@ class LocalLLMInterface:
             if use_4bit and self.BitsAndBytesConfig and device == 'cuda':
                 logger.info("Using 4-bit quantization with bitsandbytes (memory optimized)")
                 try:
-                    # Configure 4-bit quantization
+                    # Configure 4-bit quantization with CPU offloading
                     quantization_config = self.BitsAndBytesConfig(
                         load_in_4bit=True,
                         bnb_4bit_compute_dtype=torch.float16,
@@ -95,6 +95,8 @@ class LocalLLMInterface:
                         bnb_4bit_quant_type="nf4"
                     )
                     model_kwargs['quantization_config'] = quantization_config
+                    # Enable CPU offloading to VRAM for memory-constrained GPUs
+                    model_kwargs['device_map'] = {'': device}  # Ensure all layers on GPU
                 except Exception as e:
                     logger.warning(f"4-bit quantization failed, falling back to float16: {str(e)}")
                     model_kwargs['torch_dtype'] = torch.float16

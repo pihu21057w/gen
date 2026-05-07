@@ -73,7 +73,7 @@ class ReasoningConversationGenerator:
         """
         try:
             prompt_template = self.prompts.get('question_generation', {}).get('prompt_qa', '')
-            prompt = prompt_template.format(text=text[:2000])  # Limit to 2000 chars
+            prompt = prompt_template.format(text=text[:1000])  # Reduced to 1000 chars to save memory
             
             logger.info(f"[Q-Gen] Generating {num_questions} questions from text (len={len(text)})...")
             response = self.llm.generate(prompt, max_tokens=1000)
@@ -116,7 +116,7 @@ class ReasoningConversationGenerator:
         """
         try:
             prompt_template = self.prompts.get('answer_generation', {}).get('prompt_with_reasoning', '')
-            prompt = prompt_template.format(question=question, text=text[:2000])
+            prompt = prompt_template.format(question=question, text=text[:1000])  # Reduced to 1000 chars
             
             logger.info(f"[A-Gen] Answering: {question[:60]}...")
             response = self.llm.generate(prompt, max_tokens=1500)

@@ -9,11 +9,12 @@ system_instructions:
     3. Generate thoughtful questions about the provided text
     4. Decide dynamically between Q&A, problem-solving, analysis, or other formats
     5. Always include chain-of-thought reasoning
+    6. At end add a section also with key takeaways and connections to broader concepts
     
   question_generator: |
     You are an expert question generator. Your role is to:
     1. Analyze the given text deeply
-    2. Generate 3-5 diverse, thoughtful questions that test understanding
+    2. Generate 5-8 diverse, thoughtful questions that test understanding
     3. Questions should range from literal to analytical
     4. Format: Return a JSON array of questions (without markdown formatting)
     5. Each question should be clear and answerable from the text
@@ -25,6 +26,7 @@ system_instructions:
     3. Explain the logic behind each step
     4. Provide context and connections to broader concepts
     5. Format answers with clear reasoning markers
+    6. At end add a section also with key takeaways and connections to broader concepts
     
   problem_detector: |
     You are a problem detection specialist. Your role is to:

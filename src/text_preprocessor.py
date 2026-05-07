@@ -38,17 +38,6 @@ class TextPreprocessor:
         r'(molecular|atom|element|bond|reaction|oxidation|pH|concentration|mole|equilibrium|compound)',
         re.IGNORECASE
     )
-        
-        # Smart chunking configuration
-        self.use_smart_chunking = self.config.get('use_smart_chunking', True)
-        self.chunk_strategy = self.config.get('chunk_strategy', 'semantic')
-        self.preserve_boundaries = self.config.get('preserve_concept_boundaries', True)
-        self.concept_keywords = self.config.get('concept_keywords', [])
-        self.min_chunk_size = self.config.get('min_chunk_size', 200)
-        
-        # Problem detection
-        self.detect_problems = self.config.get('detect_problems', True)
-        self.problem_types = self.config.get('problem_types', [])
     BIOLOGY_PROBLEM_PATTERN = re.compile(
         r'(cell|DNA|RNA|protein|enzyme|photosynthesis|respiration|evolution|genetic|organism)',
         re.IGNORECASE
@@ -69,6 +58,17 @@ class TextPreprocessor:
         self.remove_images = self.config.get('remove_images', True)
         self.remove_code_blocks = self.config.get('remove_code_blocks', False)
         self.keep_math = self.config.get('keep_math', True)
+
+        # Smart chunking configuration
+        self.use_smart_chunking = self.config.get('use_smart_chunking', True)
+        self.chunk_strategy = self.config.get('chunk_strategy', 'semantic')
+        self.preserve_boundaries = self.config.get('preserve_concept_boundaries', True)
+        self.concept_keywords = self.config.get('concept_keywords', [])
+        self.min_chunk_size = self.config.get('min_chunk_size', 200)
+
+        # Problem detection
+        self.detect_problems = self.config.get('detect_problems', True)
+        self.problem_types = self.config.get('problem_types', [])
     
     def clean(self, text: str) -> str:
         """

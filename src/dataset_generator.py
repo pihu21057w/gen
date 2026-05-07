@@ -515,9 +515,6 @@ class DatasetGenerator:
             return 0
 
 
-# Backward-compatible alias for existing imports and call sites.
-ConversationGenerator = ReasoningConversationGenerator
-    
     def _write_entry(self, entry: Dict):
         """Write single entry to JSONL file"""
         try:
@@ -566,3 +563,7 @@ ConversationGenerator = ReasoningConversationGenerator
         except Exception as e:
             logger.error(f"Error getting dataset stats: {str(e)}")
             return {}
+
+
+# Backward-compatible alias for existing imports and call sites.
+ConversationGenerator = ReasoningConversationGenerator

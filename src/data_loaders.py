@@ -60,14 +60,14 @@ class PDFLoader(BaseLoader):
     def _import_dependencies(self):
         """Import required PDF libraries"""
         try:
-            import PyPDF2
+            import PyPDF2  # type: ignore[import-not-found]
             self.PyPDF2 = PyPDF2
         except ImportError:
             raise ImportError("PyPDF2 not installed. Install: pip install PyPDF2")
         
         if self.use_ocr:
             try:
-                import pytesseract
+                import pytesseract  # type: ignore[import-not-found]
                 from PIL import Image
                 self.pytesseract = pytesseract
                 self.Image = Image
@@ -150,7 +150,7 @@ class URLLoader(BaseLoader):
         """Import required libraries"""
         try:
             import requests
-            from bs4 import BeautifulSoup
+            from bs4 import BeautifulSoup  # type: ignore[import-not-found]
             self.requests = requests
             self.BeautifulSoup = BeautifulSoup
         except ImportError:

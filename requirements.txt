@@ -16,6 +16,8 @@ requests>=2.28.0
 beautifulsoup4>=4.11.0
 lxml>=4.9.0
 python-magic-bin>=0.4.14  # For file type detection
+pytesseract>=0.3.10
+pillow>=9.0.0
 
 # Optional but recommended for better performance
 bitsandbytes>=0.41.0  # For 8-bit quantization

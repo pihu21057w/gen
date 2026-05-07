@@ -75,17 +75,17 @@ class ReasoningConversationGenerator:
             prompt_template = self.prompts.get('question_generation', {}).get('prompt_qa', '')
             prompt = prompt_template.format(text=text[:2000])  # Limit to 2000 chars
             
-            logger.debug("Generating questions from text...")
+            logger.info(f"[Q-Gen] Generating {num_questions} questions from text (len={len(text)})...")
             response = self.llm.generate(prompt, max_tokens=1000)
             
             # Parse JSON response
             questions = self._parse_json_response(response)
             
             if isinstance(questions, list) and len(questions) > 0:
-                logger.debug(f"Generated {len(questions)} questions")
+                logger.info(f"[Q-Gen] ✓ Generated {len(questions)} questions")
                 return questions[:num_questions]  # Return requested number
             else:
-                logger.warning("Failed to parse questions, generating default")
+                logger.warning(f"[Q-Gen] Failed to parse questions, generating default ({num_questions})")
                 return self._generate_default_questions(text, num_questions)
         
         except Exception as e:
@@ -118,7 +118,7 @@ class ReasoningConversationGenerator:
             prompt_template = self.prompts.get('answer_generation', {}).get('prompt_with_reasoning', '')
             prompt = prompt_template.format(question=question, text=text[:2000])
             
-            logger.debug(f"Generating answer with reasoning for: {question[:50]}...")
+            logger.info(f"[A-Gen] Answering: {question[:60]}...")
             response = self.llm.generate(prompt, max_tokens=1500)
             
             # Ensure reasoning is present
@@ -466,8 +466,10 @@ class DatasetGenerator:
                 problem_info = chunk_data.get('problems', [])
                 
                 if not chunk_text or len(chunk_text.strip()) < 50:
-                    logger.debug(f"Skipping chunk {chunk_idx}: too short")
+                    logger.debug(f"[Chunk {chunk_idx+1}/{len(chunks)}] Skipping: too short")
                     continue
+                
+                logger.info(f"[Chunk {chunk_idx+1}/{len(chunks)}] Processing chunk ({len(chunk_text)} chars)...")
                 
                 # Determine number of turns for this chunk
                 turns_per_chunk = max(1, num_conversations // len(chunks)) if len(chunks) > 0 else num_conversations
@@ -476,6 +478,7 @@ class DatasetGenerator:
                 if problem_info and random.random() > 0.3:
                     # Problem-solving format
                     problem = random.choice(problem_info)
+                    logger.info(f"[Chunk {chunk_idx+1}] Detected problem-solving content")
                     conversation = self.conv_generator.generate_problem_solving_conversation(
                         text=chunk_text,
                         problem_type=problem.get('type', 'general'),
@@ -483,6 +486,7 @@ class DatasetGenerator:
                     )
                 else:
                     # Multi-turn Q&A format
+                    logger.info(f"[Chunk {chunk_idx+1}] Generating {turns_per_chunk}-turn Q&A conversation...")
                     conversation = self.conv_generator.generate_multi_turn_conversation(
                         text=chunk_text,
                         num_turns=turns_per_chunk,
@@ -502,7 +506,7 @@ class DatasetGenerator:
                 # Write to JSONL
                 self._write_entry(entry)
                 added += 1
-                logger.debug(f"Added conversation {added} from chunk {chunk_idx+1}/{len(chunks)}")
+                logger.info(f"[Chunk {chunk_idx+1}/{len(chunks)}] ✓ Added conversation {added}/{num_conversations}")
             
             self.dataset_count += added
             logger.info(f"Added {added} reasoning-based conversations from document {document_id}")

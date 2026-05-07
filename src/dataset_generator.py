@@ -513,6 +513,10 @@ class DatasetGenerator:
             import traceback
             traceback.print_exc()
             return 0
+
+
+# Backward-compatible alias for existing imports and call sites.
+ConversationGenerator = ReasoningConversationGenerator
     
     def _write_entry(self, entry: Dict):
         """Write single entry to JSONL file"""

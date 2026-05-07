@@ -37,6 +37,14 @@ class LocalLLMInterface:
             self.AutoTokenizer = AutoTokenizer
             self.AutoModelForCausalLM = AutoModelForCausalLM
             self.torch = torch
+            
+            # Try to import bitsandbytes for 4-bit quantization
+            try:
+                from transformers import BitsAndBytesConfig
+                self.BitsAndBytesConfig = BitsAndBytesConfig
+            except ImportError:
+                logger.warning("BitsAndBytesConfig not available. Install bitsandbytes for 4-bit quantization: pip install bitsandbytes")
+                self.BitsAndBytesConfig = None
         except ImportError:
             raise ImportError(
                 "transformers or torch not installed. "
@@ -50,6 +58,7 @@ class LocalLLMInterface:
             
             device = self.config.get('device', 'cuda' if torch.cuda.is_available() else 'cpu')
             dtype_str = self.config.get('dtype', 'float16')
+            use_4bit = self.config.get('use_4bit_quantization', False)
             
             # Map dtype string to torch dtype
             dtype_map = {
@@ -69,13 +78,27 @@ class LocalLLMInterface:
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
             
-            # Load model with quantization if using float16 on CUDA
+            # Load model with quantization if using 4-bit
             model_kwargs = {
                 'trust_remote_code': True,
                 'device_map': 'auto' if device == 'cuda' else device,
             }
             
-            if device == 'cuda' and dtype == torch.float16:
+            if use_4bit and self.BitsAndBytesConfig and device == 'cuda':
+                logger.info("Using 4-bit quantization with bitsandbytes (memory optimized)")
+                try:
+                    # Configure 4-bit quantization
+                    quantization_config = self.BitsAndBytesConfig(
+                        load_in_4bit=True,
+                        bnb_4bit_compute_dtype=torch.float16,
+                        bnb_4bit_use_double_quant=True,
+                        bnb_4bit_quant_type="nf4"
+                    )
+                    model_kwargs['quantization_config'] = quantization_config
+                except Exception as e:
+                    logger.warning(f"4-bit quantization failed, falling back to float16: {str(e)}")
+                    model_kwargs['torch_dtype'] = torch.float16
+            elif device == 'cuda' and dtype == torch.float16:
                 model_kwargs['torch_dtype'] = torch.float16
             
             self.model = self.AutoModelForCausalLM.from_pretrained(
@@ -88,6 +111,8 @@ class LocalLLMInterface:
             
             logger.info(f"Model loaded successfully on {device}")
             logger.info(f"Model dtype: {dtype}")
+            if use_4bit:
+                logger.info("4-bit quantization active - memory optimized")
             
         except Exception as e:
             logger.error(f"Error loading model {self.model_name}: {str(e)}")

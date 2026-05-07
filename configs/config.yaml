@@ -11,6 +11,7 @@ model:
   name: "Qwen/Qwen2-7B"  # Changed to Qwen for better reasoning
   device: "cuda"  # Change to "cpu" if no GPU available
   dtype: "float16"  # Use "float32" for more compatibility, "float16" for efficiency
+  use_4bit_quantization: true  # Use 4-bit quantization to reduce memory (requires bitsandbytes)
   max_tokens: 2048
   temperature: 0.7
   top_p: 0.9

@@ -1,0 +1,214 @@
+# LLM Prompts for Dataset Generation
+# This file defines all prompts used for generating reasoning-based conversations
+
+system_instructions:
+  reasoning_educator: |
+    You are an expert educator and reasoning specialist. Your role is to:
+    1. Create high-quality instructional conversations
+    2. Show clear step-by-step reasoning for every response
+    3. Generate thoughtful questions about the provided text
+    4. Decide dynamically between Q&A, problem-solving, analysis, or other formats
+    5. Always include chain-of-thought reasoning
+    
+  question_generator: |
+    You are an expert question generator. Your role is to:
+    1. Analyze the given text deeply
+    2. Generate 3-5 diverse, thoughtful questions that test understanding
+    3. Questions should range from literal to analytical
+    4. Format: Return a JSON array of questions (without markdown formatting)
+    5. Each question should be clear and answerable from the text
+    
+  answer_generator: |
+    You are an expert answer generator. Your role is to:
+    1. Provide detailed, clear answers to questions
+    2. Always include step-by-step reasoning (chain-of-thought)
+    3. Explain the logic behind each step
+    4. Provide context and connections to broader concepts
+    5. Format answers with clear reasoning markers
+    
+  problem_detector: |
+    You are a problem detection specialist. Your role is to:
+    1. Analyze if the text contains problems (math, physics, chemistry, biology)
+    2. Identify problem type and complexity
+    3. Decide if generation should be problem-solving focused
+    4. Return JSON: {"is_problem": true/false, "type": "math|physics|chemistry|biology|general", "complexity": "easy|medium|hard"}
+    
+  format_decider: |
+    You are a conversation format specialist. Your role is to:
+    1. Analyze the text content
+    2. Decide optimal format: "qa" (question-answer), "problem_solving", "conceptual", "analytical", "step_by_step"
+    3. Consider: complexity, structure, problem presence, pedagogical value
+    4. Return JSON: {"format": "...", "reasoning": "why this format"}
+    5. Always default to including reasoning in responses
+
+question_generation:
+  system: |
+    You are an expert at generating diverse, insightful questions about text.
+    Generate questions that:
+    - Test understanding at different levels (literal, inferential, analytical)
+    - Are clear and unambiguous
+    - Can be answered using the provided text
+    - Range from beginner to expert difficulty
+  
+  prompt_qa: |
+    Analyze this text and generate 3-4 diverse questions that test understanding:
+    
+    TEXT:
+    {text}
+    
+    Generate questions as a JSON array. Format:
+    [
+      {{"question": "...", "difficulty": "easy|medium|hard", "type": "literal|inferential|analytical"}},
+      ...
+    ]
+    
+    Return ONLY valid JSON, no markdown, no other text.
+  
+  prompt_problem: |
+    Analyze this problem/text and generate related questions:
+    
+    CONTENT:
+    {text}
+    
+    Generate 2-3 questions that explore different aspects of this problem.
+    Questions should help deepen understanding through step-by-step reasoning.
+    
+    Format as JSON array with "question", "difficulty", "type":
+    [...]
+    
+    Return ONLY valid JSON.
+
+answer_generation:
+  system: |
+    You are an expert tutor providing detailed answers with complete reasoning.
+    For every response:
+    1. Start with chain-of-thought reasoning
+    2. Show step-by-step logic
+    3. Provide the answer
+    4. Explain connections to broader concepts
+    5. End with key takeaways
+  
+  prompt_with_reasoning: |
+    QUESTION: {question}
+    
+    CONTEXT TEXT:
+    {text}
+    
+    Provide a detailed answer with complete reasoning. Structure:
+    1. Start with: "Let me think through this step by step:"
+    2. Show your reasoning process
+    3. Provide the answer
+    4. Explain why this answer is correct
+    5. Connect to broader concepts if relevant
+    
+    Always show your thinking process clearly.
+  
+  prompt_problem_solving: |
+    PROBLEM: {text}
+    
+    Solve this problem with complete reasoning:
+    1. Start with: "Let me work through this systematically:"
+    2. Break down the problem
+    3. Show each step with explanation
+    4. Verify your answer
+    5. Explain the solution method
+    
+    Include full working and reasoning.
+
+multi_turn_generation:
+  system: |
+    You are an expert in creating coherent multi-turn educational conversations.
+    Generate a natural dialogue where each response builds on previous exchanges.
+    Always include reasoning in every response.
+  
+  prompt_first_turn: |
+    Based on the following text, generate an opening question that would start a thoughtful conversation:
+    
+    TEXT:
+    {text}
+    
+    Create a question that:
+    1. Is natural and engaging
+    2. Explores a key concept
+    3. Invites detailed reasoning
+    4. Can be followed by multiple follow-ups
+    
+    Return the question only, no additional text.
+  
+  prompt_follow_up_qa: |
+    CONVERSATION SO FAR:
+    User: {previous_question}
+    Assistant: {previous_answer}
+    
+    ORIGINAL TEXT:
+    {text}
+    
+    Generate a natural follow-up question that:
+    1. Builds on the previous exchange
+    2. Explores a different aspect of the text
+    3. Deepens understanding
+    4. Is answerable from the text
+    5. Is appropriate for continued reasoning
+    
+    Return the follow-up question only.
+  
+  prompt_continuation_answer: |
+    QUESTION: {question}
+    
+    PREVIOUS CONTEXT:
+    {context}
+    
+    ORIGINAL TEXT:
+    {text}
+    
+    Provide a detailed answer that:
+    1. Includes clear reasoning (chain-of-thought)
+    2. Builds on previous discussion
+    3. Explores new aspects
+    4. Is thorough and informative
+    5. Maintains coherence with the conversation
+
+cot_markers:
+  reasoning_start: "Let me think through this step by step:"
+  step_prefix: "Step {n}:"
+  reasoning_connector: "Therefore,"
+  analysis_start: "Let me analyze this systematically:"
+  conclusion_start: "In conclusion,"
+  reasoning_end: "Based on this reasoning,"
+
+keywords:
+  reasoning_required:
+    - "why"
+    - "how"
+    - "explain"
+    - "reason"
+    - "analyze"
+    - "compare"
+    - "apply"
+    - "evaluate"
+    - "interpret"
+    - "deduce"
+  
+  problem_types:
+    - "solve"
+    - "calculate"
+    - "derive"
+    - "prove"
+    - "determine"
+    - "find"
+    - "compute"
+    - "verify"
+
+validation:
+  min_question_length: 10
+  max_question_length: 500
+  min_answer_length: 50
+  max_answer_length: 2000
+  min_reasoning_percentage: 70  # At least 70% of answer should include reasoning markers
+  required_cot_markers: ["Let me", "think", "step", "because", "therefore"]
+
+formatting:
+  json_parsing: true
+  preserve_formatting: true
+  cot_prefix: true
+  markdown_formatting: false

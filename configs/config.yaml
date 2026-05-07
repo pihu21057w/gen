@@ -1,0 +1,149 @@
+# Dataset Generation Pipeline Configuration
+
+# Model Configuration
+model:
+  # Recommended models for T4 GPU:
+  # - meta-llama/Llama-2-3b-hf (3B, best for speed)
+  # - meta-llama/Llama-2-7b-hf (7B, best balance)
+  # - mistralai/Mistral-7B-v0.1 (7B, faster inference)
+  # - Qwen/Qwen2-7B (7B, excellent at reasoning)
+  # - Qwen/Qwen2.5-32B (32B, if available - best reasoning)
+  name: "Qwen/Qwen2-7B"  # Changed to Qwen for better reasoning
+  device: "cuda"  # Change to "cpu" if no GPU available
+  dtype: "float16"  # Use "float32" for more compatibility, "float16" for efficiency
+  max_tokens: 2048
+  temperature: 0.7
+  top_p: 0.9
+  
+# LLM Prompt Configuration
+llm_prompts:
+  # Custom prompts for different conversation types
+  # Use {text} placeholder for document content, {question} for user question
+  multi_turn_explanation: "Explain the following content in detail with examples:\n{text}\n\nProvide a clear explanation suitable for learning."
+  multi_turn_analysis: "Analyze and discuss the following content:\n{text}\n\nProvide insights and important takeaways."
+  single_turn_qa: "Based on this content:\n{text}\n\nAnswer this question: {question}"
+  problem_solving: "Solve this problem step by step with full working:\n{text}\n\nShow all intermediate steps and reasoning."
+  cot_instruction: "Let me think through this step by step:\n"
+  
+# Dataset Generation Settings
+dataset:
+  output_format: "jsonl"  # Only jsonl supported
+  output_file: "generated_dataset.jsonl"
+  prompts_file: "prompts.yaml"  # Path to prompts YAML file (defines all generation prompts)
+  batch_size: 4
+  num_conversations_per_doc: 5  # Number of multi-turn conversations to generate per document
+  
+# Conversation Configuration
+conversation:
+  # Types: "multi_turn" (5-8 turns), "single_turn", "mixed" (50-50), "problem_solving"
+  types: ["multi_turn", "single_turn", "problem_solving"]
+  include_reasoning: true
+  reasoning_format: "chain_of_thought"  # "chain_of_thought" or "step_by_step"
+  
+  # NEW: Always include COT (Chain-of-Thought) entry
+  force_cot_entry: true  # Always generate at least one COT entry per document
+  cot_percentage: 0.7  # 70% of conversations should have COT
+  
+  # Problem solving configuration
+  solve_detected_problems: true  # Automatically solve detected problems
+  
+# Data Processing
+processing:
+  # Remove URLs, emails, HTML tags
+  remove_urls: true
+  remove_emails: true
+  remove_html_tags: true
+  remove_images: true
+  # Remove code blocks (set to false to keep them)
+  remove_code_blocks: false
+  # Keep mathematical expressions
+  keep_math: true
+  
+  # Smart Chunking Configuration
+  # NEW: Intelligent chunking that preserves context
+  use_smart_chunking: true
+  chunk_strategy: "semantic"  # Options: "semantic", "fixed", "sentence-based"
+  chunk_size: 1500  # Reduced for better context preservation
+  chunk_overlap: 300  # Increased overlap to maintain continuity
+  min_chunk_size: 200  # Minimum chunk size to avoid fragments
+  
+  # Context preservation for concepts
+  preserve_concept_boundaries: true  # Don't split mid-concept
+  concept_keywords:
+    - "theorem"
+    - "definition"
+    - "law"
+    - "principle"
+    - "formula"
+    - "equation"
+    - "chapter"
+    - "section"
+    - "topic"
+  
+  # Minimum text length to process
+  min_text_length: 100
+  
+  # Problem Detection
+  detect_problems: true
+  problem_types:
+    - "math"           # Math problems (quadratic, calculus, etc.)
+    - "physics"        # Physics problems
+    - "chemistry"      # Chemistry problems
+    - "biology"        # Biology problems
+    - "exercise"       # Generic exercises
+    - "question"       # Questions
+  
+# Data Sources Configuration
+data_sources:
+  # Supported formats: pdf, txt, markdown, md, url, website
+  supported_formats:
+    - pdf
+    - txt
+    - markdown
+    - md
+    - url
+    - website
+    
+  # PDF Processing
+  pdf:
+    extract_images: false
+    extract_tables: true
+    use_ocr: false  # Set to true for scanned PDFs (requires pytesseract)
+    
+  # Web Scraping
+  web:
+    timeout: 30
+    retry_attempts: 3
+    headers:
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    # CSS selectors to include (main content)
+    content_selectors:
+      - "main"
+      - "article"
+      - ".content"
+      - ".post-content"
+    # CSS selectors to exclude
+    exclude_selectors:
+      - "nav"
+      - "footer"
+      - ".ads"
+      - ".sidebar"
+      - "script"
+      - "style"
+
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  log_file: "pipeline.log"
+  console_output: true
+  
+# Runtime Configuration
+runtime:
+  # Continue from last position or restart
+  append_mode: true
+  # Save checkpoint after each document
+  checkpoint_interval: 5
+  # Maximum workers for parallel processing
+  max_workers: 4
+  # Seed for reproducibility
+  seed: 42

@@ -1,0 +1,31 @@
+# Dataset Generation Pipeline - Requirements
+
+# Core dependencies
+PyYAML>=6.0
+python-dotenv>=0.19.0
+
+# LLM and transformers
+torch>=2.0.0
+transformers>=4.30.0
+accelerate>=0.20.0
+safetensors>=0.3.0
+
+# Data loading and processing
+PyPDF2>=3.0.0
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+lxml>=4.9.0
+python-magic-bin>=0.4.14  # For file type detection
+
+# Optional but recommended for better performance
+bitsandbytes>=0.41.0  # For 8-bit quantization
+xformers>=0.0.20  # For efficient attention
+flash-attn>=2.0.0  # For faster attention (requires CUDA)
+
+# Google Colab specific (optional)
+huggingface-hub>=0.16.0  # For model management
+datasets>=2.10.0  # For dataset utilities
+
+# Development and utilities
+tqdm>=4.64.0
+numpy>=1.23.0
